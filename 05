@@ -1,0 +1,161 @@
+import turtle
+import random
+
+global TILE_SIZE
+TILE_SIZE = 40
+global PERSON_SIZE
+PERSON_SIZE = TILE_SIZE * 0.8
+global MAP_COLS
+MAP_COLS = 15
+global MAP_ROWS
+MAP_ROWS = 10
+global SEED
+SEED = 42
+
+global VALID_MOVE_TILES
+VALID_MOVE_TILES = (0,1)
+global TILE_COLORS
+TILE_COLORS = ('green','dark green','blue')
+global SAVE_FILENAME
+SAVE_FILENAME = ('Carmona'+'_SAVE.txt')
+global mapData
+mapData = []
+
+
+global playerRow
+playerRow = 5
+global playerCol
+playerCol = 5
+
+def drawRectangle(cx, cy, width, height, color):
+    turtle.penup()
+    turtle.pencolor(color)
+    turtle.fillcolor(color)
+
+    hW = width / 2
+    hH = height / 2
+
+    # (cx - hW, cy - hH)
+    x = cx - hW
+    y = cy - hH
+
+    turtle.goto(x, y)
+    turtle.pendown()
+    turtle.begin_fill()
+
+    # (cx + hW, cy - hH)
+    x = cx + hW
+    y = cy - hH
+    turtle.goto(x, y)
+
+    # (cx + hW, cy + hH)
+    x = cx + hW
+    y = cy + hH
+    turtle.goto(x, y)
+
+    # (cx - hW, cy + hH)
+    x = cx - hW
+    y = cy + hH
+    turtle.goto(x, y)
+
+    # (cx - hW, cy - hH)
+    x = cx - hW
+    y = cy - hH
+    turtle.goto(x, y)
+
+    turtle.end_fill()
+
+def getRandomTileType():
+    global tileType
+    tileType = random.randint(0, 10)
+    if tileType < 5:
+        return "green"
+    elif tileType >= 5 and tileType < 9:
+        return "dark green"
+    else:
+        return "blue"
+
+def getTruePixelCenter(row, col):
+    cx = TILE_SIZE/2+col * TILE_SIZE-TILE_SIZE*MAP_COLS/2
+    cy = TILE_SIZE/2+row * TILE_SIZE-TILE_SIZE*MAP_ROWS/2
+    return (cx,cy)
+
+def drawTile(row,col):
+    cx, cy = getTruePixelCenter(row, col)
+    tileType = mapData[row][col]
+    color = TILE_COLORS[tileType]
+    drawRectangle(cx, cy, TILE_SIZE-1, TILE_SIZE-1, color)
+
+def drawMap():
+    for i in range (MAP_ROWS):
+        for j in range (MAP_COLS):
+            drawTile(i, j)
+
+def drawCharacter(row, col):
+    cx, cy = getTruePixelCenter(row, col)
+    drawRectangle(cx, cy - PERSON_SIZE / 6, PERSON_SIZE, 2 * PERSON_SIZE / 3, "red")
+    drawRectangle(cx, cy + PERSON_SIZE / 3, PERSON_SIZE / 3, PERSON_SIZE / 3, "yellow")
+
+def drawScreen():
+    SEED = random.randint(0, 42)
+    turtle.clear()
+    drawMap()
+    drawCharacter(playerRow, playerCol)
+    turtle.update()
+
+def isValidMove(row,col):
+    if(mapData[row,col] in VALID_MOVE_TILES):
+        return True
+    else:
+        return False
+def moveLeft():
+    global playerCol
+    if(isValidMove(playerRow,playerCol-1)):
+        playerCol -= 1
+        drawScreen()
+
+def moveRight():
+    global playerCol
+    if(isValidMove(playerRow,playerCol+1)):
+        playerCol += 1
+        drawScreen()
+
+def moveUp():
+    global playerRow
+    if(isValidMove(playerRow+1,playerCol)):
+        playerRow += 1
+        drawScreen()
+
+def moveDown():
+    global playerRow
+    if(isValidMove(playerRow-1,playerCol)):
+        playerRow -= 1
+        drawScreen()
+
+def loadMap(filename):
+    map = []
+    try:
+        file = open(filename,'r')
+        for row in range(MAP_ROWS):
+            map.append([])
+            for col in range(MAP_COLS):
+                line = int(file.readline())
+                map[row].append(tileType)
+        file.close()
+    except IOError:
+        print("err")
+        map = []
+
+def main():
+    turtle.hideturtle()
+    turtle.tracer(0, 0)
+    turtle.setup(MAP_COLS * TILE_SIZE, MAP_ROWS * TILE_SIZE)
+    turtle.onkey(moveRight, "d")
+    turtle.onkey(moveLeft, "a")
+    turtle.onkey(moveUp, "w")
+    turtle.onkey(moveDown, "s")
+    turtle.listen()
+    drawScreen()
+    turtle.done()
+
+main()
